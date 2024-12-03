@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+import sys
+import re
+
+reports = []
+with open(sys.argv[1]) as file:
+    for line in file:
+        levels = []
+        for level in re.split('\s+', line.strip()):
+            levels.append(int(level))
+        reports.append(levels)
+
+safe = 0
+for report in reports:
+    dampener_used = False
+    increasing = None
+
+    movement_report = []
+    for stop in range(1, len(report)):
+        movement_report.append(report[stop] - report[stop - 1])
+
+    # print(movement_report)
+    
+    # Initial Movement
+    remaining_initial = 1
+    if abs(movement_report[0]) >= 1 and abs(movement_report[0]) <= 3:
+        increasing = movement_report[0] > 0
+    elif abs(movement_report[1]) >= 1 and abs(movement_report[1]) <= 3:
+        increasing = movement_report[1] > 0
+        dampener_used = True
+        remaining_initial = 2
+    else:
+        # Unsafe
+        continue
+    
+    unsafe = False
+    # Remaining Movement
+    for movement in range(remaining_initial, len(movement_report)):
+        if abs(movement_report[movement]) >= 1 and abs(movement_report[movement]) <= 3:
+            if movement_report[movement] > 0 == increasing:
+                # Safe
+                continue
+            elif dampener_used == False:
+                dampened = movement_report[movement] + movement_report[movement - 1]
+                if abs(dampened) >= 1 and abs(dampened) <= 3:
+                    if dampened > 0 == increasing:
+                        # Safe
+                        dampener_used = True
+                        continue
+                    else:
+                        unsafe = True
+            else:
+                unsafe = True
+        elif dampener_used == False:
+            dampened = movement_report[movement] + movement_report[movement - 1]
+            if abs(dampened) >= 1 and abs(dampened) <= 3:
+                if dampened > 0 == increasing:
+                    # Safe
+                    dampener_used = True
+                    continue
+                else:
+                    unsafe = True
+        else:
+            unsafe = True
+
+    if unsafe == False:
+        safe += 1
+
+print(safe)
