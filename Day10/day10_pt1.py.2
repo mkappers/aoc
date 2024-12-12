@@ -1,0 +1,99 @@
+#!/usr/env/bin python3
+import sys
+
+class Coordinate:
+    # Coordinate Class
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+
+    def __add__(self, other):
+        return Coordinate(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Coordinate(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        return Coordinate(self.x * other, self.y * other)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return self.x != other.x or self.y != other.y
+    
+    def __str__(self):
+        return "(" + str(self.x) + "," + str(self.y) + ")"
+    
+    def __repr__(self):
+        return "Coordinate(" + str(self.x) + "," + str(self.y) + ")"
+
+class TopographicMap:
+    directions = [
+        Coordinate(0,-1),  #"north"
+        Coordinate(1,0),   #"east" 
+        Coordinate(0,1),   #"south"
+        Coordinate(-1,0)   #"west" 
+    ]
+
+    def __init__(self,filepath):
+        self.map = []
+        self.width = None
+        self.height = None
+        self.trailheads = []
+        self.trails = 0
+
+        with open(filepath) as file:
+            self.map = []
+            y = 0
+            for line in file:
+                x = 0
+                row = []
+                for topo_height in line.strip():
+                    row.append(int(topo_height))
+                    if int(topo_height) == 0:
+                        self.trailheads.append(Coordinate(x,y))
+                    x += 1
+        
+                self.map.append(row)
+                y += 1
+
+        self.width = len(self.map[0])
+        self.height = len(self.map)
+
+    def traverse(self, num_trails, pos):
+        curr_value = self.get(pos)
+        for d in TopographicMap.directions:
+            try:
+                next_value = self.get(pos + d)
+                if next_value - curr_value == 1:
+                    if next_value == 9:
+                        num_trails += 1
+                    else:
+                        num_trails += self.traverse(num_trails, pos + d)
+                else:
+                    continue
+            except:
+                pass
+
+        return num_trails
+
+    def get(self,coordinate):
+        if 0 <= coordinate.x < self.width and 0 <= coordinate.y < self.height:
+            return self.map[coordinate.y][coordinate.x]
+        else:
+            return IndexError
+
+    def print(self):
+        for row in self.map:
+            print(''.join([str(th) for th in row]))
+
+if __name__ == '__main__':
+    tm = TopographicMap(sys.argv[1])
+    
+    tm.print()
+    print(tm.trailheads)
+    for th in tm.trailheads:
+        print(tm.traverse(0, th))
+
+
