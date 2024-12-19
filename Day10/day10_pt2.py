@@ -58,5 +58,5 @@ if __name__ == '__main__':
 
     uniq_dest = 0
     for th in hc.trails:
-        uniq_dest += len(set([t[-1] for t in hc.trails[th]]))
+        uniq_dest += len(hc.trails[th])
     print(uniq_dest)
